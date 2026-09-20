@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DocumentManagementSystem.BusinessLogic/DocumentManagementSystem.BusinessLogic.csproj" />
+  <Project Path="DocumentManagementSystem.DataAccess/DocumentManagementSystem.DataAccess.csproj" />
+  <Project Path="DocumentManagementSystem/DocumentManagementSystem.csproj" />
+</Solution>
