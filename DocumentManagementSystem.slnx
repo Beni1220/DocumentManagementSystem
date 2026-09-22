@@ -2,4 +2,5 @@
   <Project Path="DocumentManagementSystem.BusinessLogic/DocumentManagementSystem.BusinessLogic.csproj" />
   <Project Path="DocumentManagementSystem.DataAccess/DocumentManagementSystem.DataAccess.csproj" />
   <Project Path="DocumentManagementSystem/DocumentManagementSystem.csproj" />
+  <Project Path="Domain/Domain.csproj" Id="140bde93-f733-4763-93a4-9504d1d7859d" />
 </Solution>

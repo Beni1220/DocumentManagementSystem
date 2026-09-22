@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17
+    container_name: documentmanagement_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+
+#psql -U user -d documentmanagement um in docker desktop zu schreiben
+
+#dotnet ef migrations add <MigrationName>
+#dotnet ef database update ----ted automatisch table erstellen
