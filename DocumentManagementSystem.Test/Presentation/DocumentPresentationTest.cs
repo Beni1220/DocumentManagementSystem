@@ -2,8 +2,9 @@
 using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
-using DocumentManagementSystem.Controllers;
+using DocumentManagementSystem;
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
+using Domain.Model;
 
 public class DocumentPresentationTest
 {
@@ -21,8 +22,8 @@ public class DocumentPresentationTest
         // Arrange
         var documents = new List<Document>
         {
-            new Document { Id = 1, Title = "Document 1" },
-            new Document { Id = 2, Title = "Document 2" }
+            new Document { Id = 1, FileName = "Document 1" },
+            new Document { Id = 2, FileName = "Document 2" }
         };
         _mockDocumentService.Setup(service => service.ListDocuments()).Returns(documents);
 
@@ -39,7 +40,7 @@ public class DocumentPresentationTest
     public void Create_ReturnsCreatedResult_WhenDocumentIsValid()
     {
         // Arrange
-        var document = new Document { Id = 1, Title = "New Document" };
+        var document = new Document { Id = 1, FileName = "New Document" };
         // Act
         var result = _controller.Create(document);
         // Assert

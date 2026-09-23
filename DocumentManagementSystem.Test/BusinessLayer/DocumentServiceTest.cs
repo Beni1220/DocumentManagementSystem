@@ -1,9 +1,10 @@
-﻿namespace DocumentManagementSystem.Tests;
+﻿namespace DocumentManagementSystem.Test.BusinessLayer;
 using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
 using DocumentManagementSystem.BusinessLogic.Services;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using Domain.Model;
 
 public class DocumentServiceTest
 {
@@ -21,14 +22,14 @@ public class DocumentServiceTest
         // immer 3-A befolgen: Arrange, Act, Assert
         
         // Arrange
-        var document = new Document { Id = 1, Title = "Test Document" };
-        _mockDocumentRepository.Setup(repo => repo.GetByID(document.Id)).Returns(document);
+        var document = new Document { Id = 1, FileName = "Test Document" };
+        _mockDocumentRepository.Setup(repo => repo.GetDocument(document.Id)).Returns(document);
         
         // Act
         var result = _service.GetDocument(document.Id);
 
         // Assert
-        var assertResult = Assert.Equal(document, result);
+        Assert.Equal(document, result);
         
     }
 
@@ -37,7 +38,7 @@ public class DocumentServiceTest
     {
         // Arrange
         int documentId = 1;
-        _mockDocumentRepository.Setup(repo => repo.GetByID(documentId)).Returns((Document)null);
+        _mockDocumentRepository.Setup(repo => repo.GetDocument(documentId)).Returns((Document)null);
         // Act
         var result = _service.GetDocument(documentId);
         // Assert
@@ -48,7 +49,7 @@ public class DocumentServiceTest
     public void UploadDocument_CallsRepositoryUploadDocument()
     {
         // Arrange
-        var document = new Document { Id = 1, Title = "Test Document" };
+        var document = new Document { Id = 1, FileName = "Test Document" };
         _mockDocumentRepository.Setup(repo => repo.UploadDocument(document)).Verifiable();
         // Act
         _service.UploadDocument(document);
