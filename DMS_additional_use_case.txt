@@ -1,0 +1,9 @@
+GitHub link: https://github.com/Beni1220/DocumentManagementSystem
+
+additonal UseCase:
+
+UC1: Document Versioning
+
+Goal: A user can keep several versions of a document, go back and forth between the different versions, without losing anything.
+
+Actor: User
