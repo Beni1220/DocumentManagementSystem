@@ -12,5 +12,6 @@ namespace Domain.Model
         //public long SizeInBytes { get; set; }
         public string? Description { get; set; }
         public DateTime UploadedAt { get; set; }
+
     }
 }
