@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DMS - Document</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main>
+        <p><a href="index.html">&larr; Back to all documents</a></p>
+        <h1 id="title">Document</h1>
+        <p id="message" class="error" role="alert"></p>
+        <dl id="details"></dl>
+
+        <form id="edit-form" hidden>
+            <h2>Edit</h2>
+            <label>
+                File name
+                <input name="fileName" required maxlength="100">
+            </label>
+            <label>
+                Description
+                <textarea name="description" maxlength="500"></textarea>
+            </label>
+            <button type="submit">Save changes</button>
+            <p id="edit-error" class="error" role="alert"></p>
+        </form>
+
+        <button id="delete-button" class="danger" hidden>Delete document</button>
+    </main>
+
+    <script type="module" src="js/detail.js"></script>
+</body>
+</html>
