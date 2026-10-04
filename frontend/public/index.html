@@ -1,11 +1,22 @@
 ﻿<!DOCTYPE html>
-
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="utf-8" />
-    <title>Document Management System</title>
-</head>
+<html>
 <body>
-    <p>Test Document Management System!</p>
+    <h1>Documents</h1>
+    <ul id="list"></ul>
+
+    <script>
+            async function load() {
+              const response = await fetch('/api/documents');
+              const result = await response.json();
+              const list = document.getElementById('list');
+
+              for (const doc of result.data) {
+                const item = document.createElement('li');
+                item.textContent = doc.Id + ' - ' + doc.fileName + ' - ' + doc.description;
+                list.appendChild(item);
+              }
+            }
+            load();
+    </script>
 </body>
 </html>

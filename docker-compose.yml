@@ -25,6 +25,8 @@ services:
       - "80:80"
     depends_on:
       - rest
+    volumes:
+      - ./frontend/public:/usr/share/nginx/html:ro
     
   
   rest:
