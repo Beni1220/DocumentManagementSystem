@@ -19,6 +19,8 @@ builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(Program).Assembly));
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

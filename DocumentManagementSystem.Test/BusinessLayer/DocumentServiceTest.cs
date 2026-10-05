@@ -50,7 +50,6 @@ public class DocumentServiceTest
     {
         // Arrange
         var document = new Document { Id = 1, FileName = "Test Document" };
-        _mockDocumentRepository.Setup(repo => repo.UploadDocument(document)).Verifiable();
         // Act
         _service.UploadDocument(document);
         // Assert

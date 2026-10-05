@@ -4,14 +4,18 @@ using System.Security.Claims;
 using Domain.Model;
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
 using Domain.Model.DTO;
+using AutoMapper;
 [ApiController]
 [Route("api/documents")]
 public class DocumentController : ControllerBase
 {
     private readonly IDocumentService _service;
-    public DocumentController(IDocumentService service)
+    private readonly IMapper _mapper;
+
+    public DocumentController(IDocumentService service, IMapper mapper)
     {
         _service = service;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -22,14 +26,18 @@ public class DocumentController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create(Document document)
+    public IActionResult Create(DTODocument dtoDocument)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
+
+        
+
         try
         {
+            var document = _mapper.Map<Document>(dtoDocument);
             _service.UploadDocument(document);
             return Created($"api/documents/{document.Id}", document);
         }
@@ -40,14 +48,15 @@ public class DocumentController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(int id, Document document)
+    public IActionResult Update(int id, DTODocument dtoDocument)
     {
-        if (id != document.Id)
-        {
-            return BadRequest(new { message = "Document ID mismatch" });
-        }
-        _service.UpdateDocument(id, document);
-        return Ok(document);
+        var existing = _service.GetDocument(id);
+        if (existing == null)
+            return NotFound(new { message = $"Document with ID {id} not found" });
+
+        _service.UpdateDocument(id, _mapper.Map<Document>(dtoDocument));
+
+        return Ok(_service.GetDocument(id));
     }
 
     [HttpDelete("{id}")]
