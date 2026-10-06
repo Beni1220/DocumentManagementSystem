@@ -38,6 +38,7 @@ services:
       - "80:80"
     depends_on:
       - rest
+      - paperless
     volumes:
       - ./frontend/public:/usr/share/nginx/html:ro
   
@@ -49,26 +50,24 @@ services:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     depends_on:
       - broker
+      - db
+    ports:
+      - "8000:8000"
     environment:
       PAPERLESS_SECRET_KEY: example123
       PAPERLESS_REDIS: redis://broker:6379
-      PAPERLESS_URL: http://localhost:8082
+      PAPERLESS_URL: http://paperless.localhost
+
+      PAPERLESS_DBENGINE: postgresql
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBPORT: 5432
+      PAPERLESS_DBNAME: ${POSTGRES_DB}
+      PAPERLESS_DBUSER: ${POSTGRES_USER}
+      PAPERLESS_DBPASS: ${POSTGRES_PASSWORD}
     volumes:
       - paperless_data:/usr/src/paperless/data
       - paperless_media:/usr/src/paperless/media
-      
 
-    
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "8082:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
-    depends_on:
-      - paperless
-
-    # add volumes, db, etc. here as needed
 
 
 volumes:
