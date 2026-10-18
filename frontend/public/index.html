@@ -19,7 +19,11 @@
                 Description
                 <textarea name="description" maxlength="500"></textarea>
             </label>
+            
             <button type="submit">Add document</button>
+            <label for="upload-document">Upload Document (only .pdf files)</label>
+            <input id="upload-document" type="file" name="file" accept=".pdf">        
+            
             <p id="form-error" class="error" role="alert"></p>
         </form>
 

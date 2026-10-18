@@ -35,6 +35,13 @@ namespace DocumentManagementSystem.BusinessLogic.Services
             _documentRepository.UpdateDocument(documentId, document);
         }
 
+        // auf create umbenennen, auch im controller, interface und repository
+
+        public Document CreateDocument(Document document)
+        {
+            return _documentRepository.CreateDocument(document);
+        }
+
         public Document UploadDocument(Document document)
         {
             return _documentRepository.UploadDocument(document);

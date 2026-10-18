@@ -38,7 +38,7 @@ public class DocumentController : ControllerBase
         try
         {
             var document = _mapper.Map<Document>(dtoDocument);
-            _service.UploadDocument(document);
+            _service.CreateDocument(document);
             return Created($"api/documents/{document.Id}", document);
         }
         catch (Exception ex)
@@ -77,5 +77,43 @@ public class DocumentController : ControllerBase
         return Ok(new { message = $"Get document with ID {id}", data = document });
     }
 
-    
+    [HttpPost("uploadDocument")]
+    public IActionResult Upload(IFormFile file, [FromForm] string? description)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if(file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "No file uploaded" });
+        }
+
+        bool isPdf = file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
+        if (!isPdf)
+        {
+            return BadRequest(new { message = "Only PDF files are allowed" });
+        }
+
+        
+
+        try
+        {
+            var dtoDocument = new DTODocument
+            {
+                FileName = file.FileName,
+                Description = description,
+                sizeInBytes = (int?)file.Length
+            };
+
+            var document = _mapper.Map<Document>(dtoDocument);
+            _service.UploadDocument(document);
+            return Created($"api/documents/{document.Id}", document);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while uploading the document", error = ex.Message });
+        }
+    }
 }

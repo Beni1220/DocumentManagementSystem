@@ -8,7 +8,7 @@ namespace DocumentManagementSystem.BusinessLogic.Services.Interfaces
 {
     public interface IDocumentService
     {
-        Document UploadDocument(Document document);
+        Document CreateDocument(Document document);
 
         void UpdateDocument(int documentId, Document document);
 
@@ -17,5 +17,7 @@ namespace DocumentManagementSystem.BusinessLogic.Services.Interfaces
         Document GetDocument(int documentId);
 
         List<Document> ListDocuments();
+
+        Document UploadDocument(Document document);
     }
 }
