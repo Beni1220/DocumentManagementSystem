@@ -11,7 +11,7 @@ namespace Domain.Model.DTO
         //public long SizeInBytes { get; set; }
         public string? Description { get; set; }
 
-        public int sizeInBytes { get; set; }
+        public long sizeInBytes { get; set; }
         public string contentType { get; set; } = string.Empty;
     }
 }

@@ -104,7 +104,8 @@ public class DocumentController : ControllerBase
             {
                 FileName = file.FileName,
                 Description = description,
-                sizeInBytes = (int?)file.Length
+                sizeInBytes = file.Length,
+                contentType = file.ContentType
             };
 
             var document = _mapper.Map<Document>(dtoDocument);
