@@ -77,5 +77,46 @@ public class DocumentController : ControllerBase
         return Ok(new { message = $"Get document with ID {id}", data = document });
     }
 
+<<<<<<< Updated upstream
     
+=======
+    [HttpPost("uploadDocument")]
+    public async Task<IActionResult> Upload(IFormFile file, [FromForm] string? description)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "No file uploaded" });
+        }
+
+        bool isPdf = file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
+        if (!isPdf)
+        {
+            return BadRequest(new { message = "Only PDF files are allowed" });
+        }
+
+        try
+        {
+            var dtoDocument = new DTODocument
+            {
+                FileName = file.FileName,
+                Description = description,
+                sizeInBytes = file.Length,
+                contentType = file.ContentType
+            };
+
+            var document = _mapper.Map<Document>(dtoDocument);
+            var saved = await _service.UploadDocumentAsync(document);
+            return Created($"api/documents/{saved.Id}", saved);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while uploading the document", error = ex.Message });
+        }
+    }
+>>>>>>> Stashed changes
 }

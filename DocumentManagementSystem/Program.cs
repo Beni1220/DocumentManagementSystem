@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using DocumentManagementSystem.DataAccess.Context;
-using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
+using DocumentManagementSystem.BusinessLogic.Messaging;
+using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
 using DocumentManagementSystem.BusinessLogic.Services;          
-using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
+using DocumentManagementSystem.DataAccess.Context;
 using DocumentManagementSystem.DataAccess.Repositories;
+using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +16,8 @@ builder.Services.AddDbContext<DMSContext>(options =>
         b => b.MigrationsAssembly("DocumentManagementSystem.DataAccess")));
 
 builder.Services.AddScoped<IDocumentService, DocumentService>();
-builder.Services.AddScoped<IDocumentRepository, DocumentRepository>(); 
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

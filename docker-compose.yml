@@ -25,8 +25,14 @@ services:
       - "8080:8080"
     environment:
       ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: ${RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD}
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   frontend:
@@ -68,12 +74,30 @@ services:
       - paperless_data:/usr/src/paperless/data
       - paperless_media:/usr/src/paperless/media
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: documentmanagement_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 
 
 volumes:
   postgres_data:
   paperless_data:
   paperless_media:
+  rabbitmq_data:
 #psql -U user -d documentmanagement um in docker desktop zu schreiben
 
 #dotnet ef migrations add <MigrationName>

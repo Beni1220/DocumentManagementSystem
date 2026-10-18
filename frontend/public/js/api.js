@@ -42,4 +42,18 @@ export async function updateDocument(id, doc) {
         body: JSON.stringify(doc),
     });
     return response.json();
+<<<<<<< Updated upstream
+=======
+}
+
+export async function uploadDocument(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+   const response = await request(`${BASE_URL}/uploadDocument`, {
+        method: 'POST',
+        body: formData,
+    });
+    return response.json();
+>>>>>>> Stashed changes
 }

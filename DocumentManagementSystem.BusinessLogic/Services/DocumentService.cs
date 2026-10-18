@@ -1,5 +1,7 @@
-﻿using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
+﻿using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
+using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using Domain.Massages;
 using Domain.Model;
 using Domain.Model.DTO;
 using System;
@@ -11,9 +13,11 @@ namespace DocumentManagementSystem.BusinessLogic.Services
     public class DocumentService : IDocumentService
     {
         private readonly IDocumentRepository _documentRepository;
-        public DocumentService(IDocumentRepository documentRepository)
+        private readonly IMessagePublisher _publisher;
+        public DocumentService(IDocumentRepository documentRepository, IMessagePublisher publisher)
         {
             _documentRepository = documentRepository;
+            _publisher = publisher;
         }
         public void DeleteDocument(int documentId)
         {
@@ -35,9 +39,28 @@ namespace DocumentManagementSystem.BusinessLogic.Services
             _documentRepository.UpdateDocument(documentId, document);
         }
 
+<<<<<<< Updated upstream
         public Document UploadDocument(Document document)
+=======
+        // auf create umbenennen, auch im controller, interface und repository
+
+        public Document CreateDocument(Document document)
         {
-            return _documentRepository.UploadDocument(document);
+            return _documentRepository.CreateDocument(document);
+        }
+
+        public async Task<Document> UploadDocumentAsync(Document document)
+>>>>>>> Stashed changes
+        {
+            Document saved = _documentRepository.UploadDocument(document);
+
+            await _publisher.PublishAsync(QueueNames.Ocr, new DocumentUploadedMessage
+            {
+                DocumentId = saved.Id,
+                FileName = saved.FileName
+            });
+
+            return saved;
         }
     }
 }
