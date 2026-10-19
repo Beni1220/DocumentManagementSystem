@@ -32,19 +32,9 @@ public class DocumentController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-
-        
-
-        try
-        {
-            var document = _mapper.Map<Document>(dtoDocument);
-            _service.CreateDocument(document);
-            return Created($"api/documents/{document.Id}", document);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "An error occurred while uploading the document", error = ex.Message });
-        }
+        var document = _mapper.Map<Document>(dtoDocument);
+        _service.CreateDocument(document);
+        return Created($"api/documents/{document.Id}", document);
     }
 
     [HttpPut("{id}")]
@@ -96,25 +86,17 @@ public class DocumentController : ControllerBase
             return BadRequest(new { message = "Only PDF files are allowed" });
         }
 
-
-
-        try
+        DTODocument dtoDocument = new DTODocument
         {
-            var dtoDocument = new DTODocument
-            {
-                FileName = file.FileName,
-                Description = description,
-                sizeInBytes = file.Length,
-                contentType = file.ContentType
-            };
+            FileName = file.FileName,
+            Description = description,
+            sizeInBytes = file.Length,
+            contentType = file.ContentType
+        };
 
-            var document = _mapper.Map<Document>(dtoDocument);
-            var saved = await _service.UploadDocumentAsync(document);
-            return Created($"api/documents/{saved.Id}", saved);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "An error occurred while uploading the document", error = ex.Message });
-        }
+        Document document = _mapper.Map<Document>(dtoDocument);
+        var saved = await _service.UploadDocumentAsync(document);
+        return Created($"api/documents/{saved.Id}", saved);
+
     }
 }

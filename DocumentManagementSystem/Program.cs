@@ -5,6 +5,7 @@ using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
 using DocumentManagementSystem.DataAccess.Context;
 using DocumentManagementSystem.DataAccess.Repositories;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using DocumentManagementSystem.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -24,7 +25,12 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(Program).Assembly));
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 using (var scope = app.Services.CreateScope())
 {

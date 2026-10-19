@@ -1,5 +1,6 @@
 ﻿﻿using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
+using DocumentManagementSystem.DataAccess.Exceptions;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
 using Domain.Massages;
 using Domain.Model;
@@ -55,11 +56,19 @@ namespace DocumentManagementSystem.BusinessLogic.Services
         {
             Document saved = _documentRepository.UploadDocument(document);
 
-            await _publisher.PublishAsync(QueueNames.Ocr, new DocumentUploadedMessage
+            try
             {
-                DocumentId = saved.Id,
-                FileName = saved.FileName
-            });
+                await _publisher.PublishAsync(QueueNames.Ocr, new DocumentUploadedMessage
+                {
+                    DocumentId = saved.Id,
+                    FileName = saved.FileName
+                });
+            }
+            catch (MessagingException)
+            {
+                _documentRepository.DeleteDocument(saved.Id);
+                throw;
+            }
 
             return saved;
         }

@@ -1,4 +1,5 @@
 ﻿using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
+using DocumentManagementSystem.DataAccess.Exceptions;
 using Domain.Massages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -22,33 +23,41 @@ namespace DocumentManagementSystem.BusinessLogic.Messaging
 
         public async Task PublishAsync(string queue, object message)
         {
-            var factory = new ConnectionFactory
+            try
             {
-                HostName = _configuration["RabbitMq:HostName"]!,
-                Port = int.Parse(_configuration["RabbitMq:Port"]!),
-                UserName = _configuration["RabbitMq:UserName"]!,
-                Password = _configuration["RabbitMq:Password"]!
-            };
+                var factory = new ConnectionFactory
+                {
+                    HostName = _configuration["RabbitMq:HostName"]!,
+                    Port = int.Parse(_configuration["RabbitMq:Port"]!),
+                    UserName = _configuration["RabbitMq:UserName"]!,
+                    Password = _configuration["RabbitMq:Password"]!
+                };
 
-            await using var connection = await factory.CreateConnectionAsync();
-            await using var channel = await connection.CreateChannelAsync();
+                await using var connection = await factory.CreateConnectionAsync();
+                await using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(
-                queue: queue,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
+                await channel.QueueDeclareAsync(
+                    queue: queue,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
-            var properties = new BasicProperties { Persistent = true };
+                var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+                var properties = new BasicProperties { Persistent = true };
 
-            await channel.BasicPublishAsync(
-                exchange: string.Empty,
-                routingKey: queue,
-                mandatory: false,
-                basicProperties: properties,
-                body: body);
+                await channel.BasicPublishAsync(
+                    exchange: string.Empty,
+                    routingKey: queue,
+                    mandatory: false,
+                    basicProperties: properties,
+                    body: body);
+            }
+            catch (Exception ex)
+            {
+                throw new MessagingException($"Could not publish message to queue '{queue}'.", ex);
+            }
+
         }
     }
 }
