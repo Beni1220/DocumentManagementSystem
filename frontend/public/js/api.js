@@ -42,8 +42,6 @@ export async function updateDocument(id, doc) {
         body: JSON.stringify(doc),
     });
     return response.json();
-<<<<<<< Updated upstream
-=======
 }
 
 export async function uploadDocument(file) {
@@ -55,5 +53,4 @@ export async function uploadDocument(file) {
         body: formData,
     });
     return response.json();
->>>>>>> Stashed changes
 }

@@ -10,12 +10,6 @@ namespace Domain.Model.DTO
         //public string ContentType { get; set; } = default!;
         //public long SizeInBytes { get; set; }
         public string? Description { get; set; }
-<<<<<<< Updated upstream
-=======
-
-        public long sizeInBytes { get; set; }
-        public string? contentType { get; set; }
->>>>>>> Stashed changes
 
         public long sizeInBytes { get; set; }
         public string contentType { get; set; } = string.Empty;

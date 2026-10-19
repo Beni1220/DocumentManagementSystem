@@ -1,4 +1,4 @@
-﻿using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
+﻿﻿using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
 using Domain.Massages;
@@ -39,9 +39,6 @@ namespace DocumentManagementSystem.BusinessLogic.Services
             _documentRepository.UpdateDocument(documentId, document);
         }
 
-<<<<<<< Updated upstream
-        public Document UploadDocument(Document document)
-=======
         // auf create umbenennen, auch im controller, interface und repository
 
         public Document CreateDocument(Document document)
@@ -49,8 +46,12 @@ namespace DocumentManagementSystem.BusinessLogic.Services
             return _documentRepository.CreateDocument(document);
         }
 
+        public Document UploadDocument(Document document)
+        {
+            return _documentRepository.UploadDocument(document);
+        }
+
         public async Task<Document> UploadDocumentAsync(Document document)
->>>>>>> Stashed changes
         {
             Document saved = _documentRepository.UploadDocument(document);
 

@@ -17,12 +17,11 @@ namespace DocumentManagementSystem.BusinessLogic.Services.Interfaces
         Document GetDocument(int documentId);
 
         List<Document> ListDocuments();
-<<<<<<< Updated upstream
-=======
 
         Task<Document> UploadDocumentAsync(Document document);
->>>>>>> Stashed changes
 
         Document UploadDocument(Document document);
+
+        
     }
 }
