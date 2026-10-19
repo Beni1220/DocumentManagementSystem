@@ -78,7 +78,7 @@ public class DocumentController : ControllerBase
     }
 
     [HttpPost("uploadDocument")]
-    public IActionResult Upload(IFormFile file, [FromForm] string? description)
+    public async Task<IActionResult> Upload(IFormFile file, [FromForm] string? description)
     {
         if (!ModelState.IsValid)
         {
@@ -96,7 +96,7 @@ public class DocumentController : ControllerBase
             return BadRequest(new { message = "Only PDF files are allowed" });
         }
 
-        
+
 
         try
         {
@@ -109,8 +109,8 @@ public class DocumentController : ControllerBase
             };
 
             var document = _mapper.Map<Document>(dtoDocument);
-            _service.UploadDocument(document);
-            return Created($"api/documents/{document.Id}", document);
+            var saved = await _service.UploadDocumentAsync(document);
+            return Created($"api/documents/{saved.Id}", saved);
         }
         catch (Exception ex)
         {
