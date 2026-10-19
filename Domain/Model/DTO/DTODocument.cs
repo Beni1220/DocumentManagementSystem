@@ -16,5 +16,8 @@ namespace Domain.Model.DTO
         public long sizeInBytes { get; set; }
         public string? contentType { get; set; }
 >>>>>>> Stashed changes
+
+        public long sizeInBytes { get; set; }
+        public string contentType { get; set; } = string.Empty;
     }
 }

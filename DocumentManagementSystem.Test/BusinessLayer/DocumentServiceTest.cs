@@ -54,9 +54,9 @@ public class DocumentServiceTest
         // Arrange
         var document = new Document { Id = 1, FileName = "Test Document" };
         // Act
-        _service.UploadDocument(document);
+        _service.CreateDocument(document);
         // Assert
-        _mockDocumentRepository.Verify(repo => repo.UploadDocument(document), Times.Once);
+        _mockDocumentRepository.Verify(repo => repo.CreateDocument(document), Times.Once);
     }
 
     [Fact]

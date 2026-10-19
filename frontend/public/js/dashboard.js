@@ -1,9 +1,10 @@
-import { getDocuments, createDocument, deleteDocument } from './api.js';
+import { getDocuments, createDocument, deleteDocument, uploadDocument } from './api.js';
 
 const list = document.getElementById('list');
 const listError = document.getElementById('list-error');
 const form = document.getElementById('create-form');
 const formError = document.getElementById('form-error');
+const fileInput = document.getElementById('upload-document');
 
 async function loadDocuments() {
     try {
@@ -81,6 +82,20 @@ async function handleSubmit(event) {
         formError.textContent = `Could not save the document (${error.message})`;
     }
 }
+
+async function handleFileUpload(event) {
+    console.log('Selected file:', event.target.files[0]);
+    try {
+        await uploadDocument(event.target.files[0]);
+        await loadDocuments();
+    } catch (error) {
+        formError.textContent = `Could not upload the document (${error.message})`;
+    }
+
+
+}
+
+fileInput.addEventListener('change', handleFileUpload);
 
 form.addEventListener('submit', handleSubmit);
 loadDocuments();

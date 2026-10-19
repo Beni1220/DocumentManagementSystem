@@ -38,7 +38,7 @@ public class DocumentController : ControllerBase
         try
         {
             var document = _mapper.Map<Document>(dtoDocument);
-            _service.UploadDocument(document);
+            _service.CreateDocument(document);
             return Created($"api/documents/{document.Id}", document);
         }
         catch (Exception ex)
@@ -77,18 +77,15 @@ public class DocumentController : ControllerBase
         return Ok(new { message = $"Get document with ID {id}", data = document });
     }
 
-<<<<<<< Updated upstream
-    
-=======
     [HttpPost("uploadDocument")]
-    public async Task<IActionResult> Upload(IFormFile file, [FromForm] string? description)
+    public IActionResult Upload(IFormFile file, [FromForm] string? description)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        if (file == null || file.Length == 0)
+        if(file == null || file.Length == 0)
         {
             return BadRequest(new { message = "No file uploaded" });
         }
@@ -98,6 +95,8 @@ public class DocumentController : ControllerBase
         {
             return BadRequest(new { message = "Only PDF files are allowed" });
         }
+
+        
 
         try
         {
@@ -110,13 +109,12 @@ public class DocumentController : ControllerBase
             };
 
             var document = _mapper.Map<Document>(dtoDocument);
-            var saved = await _service.UploadDocumentAsync(document);
-            return Created($"api/documents/{saved.Id}", saved);
+            _service.UploadDocument(document);
+            return Created($"api/documents/{document.Id}", document);
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred while uploading the document", error = ex.Message });
         }
     }
->>>>>>> Stashed changes
 }

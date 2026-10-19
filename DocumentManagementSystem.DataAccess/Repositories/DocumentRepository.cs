@@ -64,6 +64,14 @@ namespace DocumentManagementSystem.DataAccess.Repositories
             }
         }
 
+        public Document CreateDocument(Document document)
+        {
+            _context.Documents.Add(document);
+            _context.SaveChanges();
+            return document;
+        }
+
+
         public Document UploadDocument(Document document)
         {
             _context.Documents.Add(document);

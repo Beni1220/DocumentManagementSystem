@@ -7,11 +7,14 @@ namespace DocumentManagementSystem.DataAccess.Repositories.Interfaces
 {
     public interface IDocumentRepository
     {
-        Document UploadDocument(Document document);
+        
+        Document CreateDocument(Document document);
         void UpdateDocument(int documentId, Document document);
         void DeleteDocument(int documentId);
         Document GetDocument(int documentId);
         List<Document> ListDocuments();
+
+        Document UploadDocument(Document document); 
 
     }
 }
