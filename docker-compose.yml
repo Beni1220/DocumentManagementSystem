@@ -114,5 +114,5 @@ volumes:
   rabbitmq_data:
 #psql -U user -d documentmanagement um in docker desktop zu schreiben
 
-#dotnet ef migrations add <MigrationName>
-#dotnet ef database update ----ted automatisch table erstellen
+#dotnet ef migrations add <Name> --project .\DocumentManagementSystem.DataAccess\ --startup-project .\DocumentManagementSystem\
+#dotnet ef database update --project .\DocumentManagementSystem.DataAccess\ --startup-project .\DocumentManagementSystem\
