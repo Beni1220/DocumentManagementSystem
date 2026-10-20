@@ -94,10 +94,15 @@ fileInput.addEventListener('change', () => {
 
 async function handleFileUpload() {
     console.log('Selected file:', fileInput.files[0]);
+
+    if(uploadButton.disabled || fileInput.files.length === 0) return;
+
     try {
         uploadButton.disabled = true; 
         await uploadDocument(fileInput.files[0]);
         await loadDocuments();
+
+        fileInput.value = '';
        
     } catch (error) {
         formError.textContent = `Could not upload the document (${error.message})`;

@@ -26,6 +26,7 @@ function renderDocument(doc) {
     addRow('ID', doc.id);
     addRow('Description', doc.description || '(none)');
     addRow('Uploaded', new Date(doc.uploadedAt).toLocaleString());
+    
 
     editForm.elements.fileName.value = doc.fileName;
     editForm.elements.description.value = doc.description ?? '';

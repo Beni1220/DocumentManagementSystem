@@ -75,6 +75,7 @@ public class DocumentController : ControllerBase
     }
 
     [HttpPost("uploadDocument")]
+    [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload(IFormFile file, [FromForm] string? description)
     {
         if (!ModelState.IsValid)
