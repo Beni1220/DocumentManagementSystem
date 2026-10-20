@@ -12,10 +12,13 @@ public class DocumentController : ControllerBase
     private readonly IDocumentService _service;
     private readonly IMapper _mapper;
 
-    public DocumentController(IDocumentService service, IMapper mapper)
+    private readonly ILogger<DocumentController> _logger;
+
+    public DocumentController(IDocumentService service, IMapper mapper, ILogger<DocumentController> logger)
     {
         _service = service;
         _mapper = mapper;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -40,6 +43,7 @@ public class DocumentController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult Update(int id, DTODocument dtoDocument)
     {
+
         var existing = _service.GetDocument(id);
         if (existing == null)
             return NotFound(new { message = $"Document with ID {id} not found" });
@@ -53,6 +57,9 @@ public class DocumentController : ControllerBase
     public IActionResult Delete(int id)
     {
        _service.DeleteDocument(id);
+
+        _logger.LogInformation("Deleting document {DocumentId}", id);
+
         return NoContent();
     }
 
@@ -75,16 +82,20 @@ public class DocumentController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        if(file == null || file.Length == 0)
+        if (file == null || file.Length == 0)
         {
+            _logger.LogWarning("Upload rejected: no file provided");
             return BadRequest(new { message = "No file uploaded" });
         }
 
         bool isPdf = file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
         if (!isPdf)
         {
+            _logger.LogWarning("Upload rejected: {FileName} has content type {ContentType}", file.FileName, file.ContentType);
             return BadRequest(new { message = "Only PDF files are allowed" });
         }
+
+        _logger.LogInformation("Upload started: {FileName} ({Size} bytes)", file.FileName, file.Length);
 
         DTODocument dtoDocument = new DTODocument
         {
@@ -96,7 +107,9 @@ public class DocumentController : ControllerBase
 
         Document document = _mapper.Map<Document>(dtoDocument);
         var saved = await _service.UploadDocumentAsync(document);
-        return Created($"api/documents/{saved.Id}", saved);
 
+        _logger.LogInformation("Upload finished: document {DocumentId} created", saved.Id);
+
+        return Created($"api/documents/{saved.Id}", saved);
     }
 }

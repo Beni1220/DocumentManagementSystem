@@ -16,9 +16,12 @@ namespace DocumentManagementSystem.BusinessLogic.Messaging
     {
         private readonly IConfiguration _configuration;
 
-        public RabbitMqPublisher(IConfiguration configuration)
+        private readonly ILogger<RabbitMqPublisher> _logger;
+
+        public RabbitMqPublisher(IConfiguration configuration, ILogger<RabbitMqPublisher> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task PublishAsync(string queue, object message)
@@ -52,6 +55,7 @@ namespace DocumentManagementSystem.BusinessLogic.Messaging
                     mandatory: false,
                     basicProperties: properties,
                     body: body);
+                _logger.LogInformation("Message published to queue {Queue}", queue);
             }
             catch (Exception ex)
             {
