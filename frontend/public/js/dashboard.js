@@ -1,10 +1,11 @@
-import { getDocuments, createDocument, deleteDocument, uploadDocument } from './api.js';
+import { getDocuments, deleteDocument, uploadDocument } from './api.js';
 
 const list = document.getElementById('list');
 const listError = document.getElementById('list-error');
-const form = document.getElementById('create-form');
+// const form = document.getElementById('create-form');
 const formError = document.getElementById('form-error');
 const fileInput = document.getElementById('upload-document');
+const uploadButton = document.getElementById('upload-button');
 
 async function loadDocuments() {
     try {
@@ -62,6 +63,7 @@ async function handleDelete(doc) {
     }
 }
 
+/*
 async function handleSubmit(event) {
     event.preventDefault();
 
@@ -82,20 +84,31 @@ async function handleSubmit(event) {
         formError.textContent = `Could not save the document (${error.message})`;
     }
 }
+ 
+*/
 
-async function handleFileUpload(event) {
-    console.log('Selected file:', event.target.files[0]);
+
+fileInput.addEventListener('change', () => {
+    uploadButton.disabled = fileInput.files.length === 0;
+});
+
+async function handleFileUpload() {
+    console.log('Selected file:', fileInput.files[0]);
     try {
-        await uploadDocument(event.target.files[0]);
+        uploadButton.disabled = true; 
+        await uploadDocument(fileInput.files[0]);
         await loadDocuments();
+       
     } catch (error) {
         formError.textContent = `Could not upload the document (${error.message})`;
+    } finally {
+        uploadButton.disabled = fileInput.files.length === 0; 
     }
 
 
 }
 
-fileInput.addEventListener('change', handleFileUpload);
+uploadButton.addEventListener('click', handleFileUpload);
 
-form.addEventListener('submit', handleSubmit);
+//form.addEventListener('submit', handleSubmit);
 loadDocuments();

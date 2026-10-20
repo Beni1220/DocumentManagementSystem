@@ -22,6 +22,7 @@ export async function getDocument(id) {
     return result.data;
 }
 
+/*
 export async function createDocument({ fileName, description }) {
     const response = await request(BASE_URL, {
         method: 'POST',
@@ -30,7 +31,7 @@ export async function createDocument({ fileName, description }) {
     });
     return response.json();
 }
-
+*/
 export async function deleteDocument(id) {
     await request(`${BASE_URL}/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
