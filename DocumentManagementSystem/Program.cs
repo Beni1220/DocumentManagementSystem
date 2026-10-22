@@ -11,6 +11,12 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseSentry(options =>
+{
+    options.EnableLogs = true;
+    options.TracesSampleRate = builder.Environment.IsDevelopment() ? 1.0 : 0.1;
+});
+
 builder.Services.AddDbContext<DMSContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Default"),
