@@ -3,6 +3,8 @@ using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
 using DocumentManagementSystem.BusinessLogic.Services;
 using DocumentManagementSystem.DataAccess.Exceptions;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using DocumentManagementSystem.Storage.Exceptions;
+using DocumentManagementSystem.Storage.Interfaces;
 using Domain.Massages;
 using Domain.Model;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -14,13 +16,15 @@ public class DocumentServiceTest
     private readonly Mock<IDocumentRepository> _mockDocumentRepository = new();
     private readonly Mock<IMessagePublisher> _mockPublisher = new();
     private readonly DocumentService _service;
+    private readonly Mock<IFileStorage> _mockFileStorage = new();
 
     public DocumentServiceTest()
     {
         _service = new DocumentService(
-            _mockDocumentRepository.Object,
-            _mockPublisher.Object,
-            NullLogger<DocumentService>.Instance);
+        _mockDocumentRepository.Object,
+        _mockPublisher.Object,
+        _mockFileStorage.Object,
+        NullLogger<DocumentService>.Instance);
     }
 
     // ---------- Get ----------
@@ -130,52 +134,64 @@ public class DocumentServiceTest
     // ---------- Upload ----------
 
     [Fact]
-    public async Task UploadDocumentAsync_SavesDocument_AndPublishesMessage()
+    public async Task UploadDocumentAsync_StoresFile_AndPublishesMessage()
     {
         // Arrange
         var document = new Document { FileName = "test.pdf" };
         var saved = new Document { Id = 5, FileName = "test.pdf" };
         _mockDocumentRepository.Setup(r => r.UploadDocument(document)).Returns(saved);
+        using var content = new MemoryStream(new byte[] { 1, 2, 3 });
 
         // Act
-        var result = await _service.UploadDocumentAsync(document);
+        var result = await _service.UploadDocumentAsync(document, content, 3, "application/pdf");
 
         // Assert
         Assert.Equal(5, result.Id);
-        _mockDocumentRepository.Verify(r => r.UploadDocument(document), Times.Once);
+        _mockFileStorage.Verify(s => s.UploadAsync("5.pdf", content, 3, "application/pdf"), Times.Once);
         _mockPublisher.Verify(p => p.PublishAsync(
             QueueNames.Ocr,
             It.Is<object>(m => m is DocumentUploadedMessage
                                && ((DocumentUploadedMessage)m).DocumentId == 5
-                               && ((DocumentUploadedMessage)m).FileName == "test.pdf")),
+                               && ((DocumentUploadedMessage)m).ObjectName == "5.pdf")),
             Times.Once);
     }
 
     [Fact]
-    public async Task UploadDocumentAsync_DeletesDocument_WhenPublishFails()
+    public async Task UploadDocumentAsync_DeletesDocument_WhenStorageFails()
     {
         // Arrange
         var document = new Document { FileName = "test.pdf" };
         var saved = new Document { Id = 5, FileName = "test.pdf" };
         _mockDocumentRepository.Setup(r => r.UploadDocument(document)).Returns(saved);
-        _mockPublisher.Setup(p => p.PublishAsync(It.IsAny<string>(), It.IsAny<object>()))
-            .ThrowsAsync(new MessagingException("queue down", new Exception()));
+        _mockFileStorage
+            .Setup(s => s.UploadAsync(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<long>(), It.IsAny<string>()))
+            .ThrowsAsync(new StorageException("storage down", new Exception()));
+        using var content = new MemoryStream();
 
         // Act & Assert
-        await Assert.ThrowsAsync<MessagingException>(() => _service.UploadDocumentAsync(document));
+        await Assert.ThrowsAsync<StorageException>(() =>
+            _service.UploadDocumentAsync(document, content, 0, "application/pdf"));
         _mockDocumentRepository.Verify(r => r.DeleteDocument(5), Times.Once);
+        _mockFileStorage.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
+        _mockPublisher.Verify(p => p.PublishAsync(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
     }
 
     [Fact]
-    public async Task UploadDocumentAsync_DoesNotPublish_WhenSavingFails()
+    public async Task UploadDocumentAsync_DeletesFileAndDocument_WhenPublishFails()
     {
         // Arrange
         var document = new Document { FileName = "test.pdf" };
-        _mockDocumentRepository.Setup(r => r.UploadDocument(document))
-            .Throws(new DataAccessException("db down"));
+        var saved = new Document { Id = 5, FileName = "test.pdf" };
+        _mockDocumentRepository.Setup(r => r.UploadDocument(document)).Returns(saved);
+        _mockPublisher
+            .Setup(p => p.PublishAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .ThrowsAsync(new MessagingException("queue down", new Exception()));
+        using var content = new MemoryStream();
 
         // Act & Assert
-        await Assert.ThrowsAsync<DataAccessException>(() => _service.UploadDocumentAsync(document));
-        _mockPublisher.Verify(p => p.PublishAsync(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
+        await Assert.ThrowsAsync<MessagingException>(() =>
+            _service.UploadDocumentAsync(document, content, 0, "application/pdf"));
+        _mockFileStorage.Verify(s => s.DeleteAsync("5.pdf"), Times.Once);
+        _mockDocumentRepository.Verify(r => r.DeleteDocument(5), Times.Once);
     }
 }

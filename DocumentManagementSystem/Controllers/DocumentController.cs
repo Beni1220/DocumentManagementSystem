@@ -74,8 +74,8 @@ public class DocumentController : ControllerBase
         return Ok(new { message = $"Get document with ID {id}", data = document });
     }
 
-    [HttpPost("uploadDocument")]
     [Consumes("multipart/form-data")]
+    [HttpPost("uploadDocument")]
     public async Task<IActionResult> Upload(IFormFile file, [FromForm] string? description)
     {
         if (!ModelState.IsValid)
@@ -98,7 +98,7 @@ public class DocumentController : ControllerBase
 
         _logger.LogInformation("Upload started: {FileName} ({Size} bytes)", file.FileName, file.Length);
 
-        DTODocument dtoDocument = new DTODocument
+        var dtoDocument = new DTODocument
         {
             FileName = file.FileName,
             Description = description,
@@ -106,11 +106,12 @@ public class DocumentController : ControllerBase
             contentType = file.ContentType
         };
 
-        Document document = _mapper.Map<Document>(dtoDocument);
-        var saved = await _service.UploadDocumentAsync(document);
+        var document = _mapper.Map<Document>(dtoDocument);
+
+        using var stream = file.OpenReadStream();
+        var saved = await _service.UploadDocumentAsync(document, stream, file.Length, file.ContentType);
 
         _logger.LogInformation("Upload finished: document {DocumentId} created", saved.Id);
-
         return Created($"api/documents/{saved.Id}", saved);
     }
 }

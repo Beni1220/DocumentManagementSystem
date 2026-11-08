@@ -18,10 +18,12 @@ namespace DocumentManagementSystem.BusinessLogic.Services.Interfaces
 
         List<Document> ListDocuments();
 
-        Task<Document> UploadDocumentAsync(Document document);
+        //verändert für FileSotrage
+        Task<Document> UploadDocumentAsync(Document document, Stream content, long size, string contentType);
 
+        /*
         Document UploadDocument(Document document);
-
+        */
         
     }
 }

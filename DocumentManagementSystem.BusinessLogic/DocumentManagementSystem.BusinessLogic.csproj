@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DocumentManagementSystem.DataAccess\DocumentManagementSystem.DataAccess.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\DocumentManagementSystem.Storage\DocumentManagementSystem.Storage.csproj" />
   </ItemGroup>
 
 </Project>

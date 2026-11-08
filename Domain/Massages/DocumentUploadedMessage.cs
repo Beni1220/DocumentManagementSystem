@@ -8,5 +8,6 @@ namespace Domain.Massages
     {
         public int DocumentId { get; set; }
         public string FileName { get; set; } = default!;
+        public string ObjectName { get; set; } = default!;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DocumentManagementSystem.DataAccess.Exceptions;
+using DocumentManagementSystem.Storage.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace DocumentManagementSystem.Exceptions
@@ -20,6 +21,7 @@ namespace DocumentManagementSystem.Exceptions
                 DocumentNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
                 DataAccessException => (StatusCodes.Status500InternalServerError, "A database error occurred."),
                 MessagingException => (StatusCodes.Status503ServiceUnavailable, "The message queue is currently not available. Please try again later."),
+                StorageException => (StatusCodes.Status503ServiceUnavailable, "The file storage is currently not available. Please try again later."),
                 _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
             };
 

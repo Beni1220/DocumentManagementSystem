@@ -2,12 +2,15 @@ using DocumentManagementSystem.BusinessLogic.Messaging;
 using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
 using DocumentManagementSystem.BusinessLogic.Services;          
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
+using DocumentManagementSystem.BusinessLogic.Storage;
 using DocumentManagementSystem.DataAccess.Context;
 using DocumentManagementSystem.DataAccess.Repositories;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
 using DocumentManagementSystem.Exceptions;
+using DocumentManagementSystem.Storage.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,7 @@ builder.Services.AddDbContext<DMSContext>(options =>
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
+builder.Services.AddScoped<IFileStorage, MinioFileStorage>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

@@ -29,11 +29,17 @@ services:
       RabbitMq__Port: 5672
       RabbitMq__UserName: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      Minio__Endpoint: minio:9000
+      Minio__AccessKey: ${MINIO_USER}
+      Minio__SecretKey: ${MINIO_PASSWORD}
+      Minio__BucketName: documents
     depends_on:
       db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio:
+        condition: service_started
 
   ocrworker:
     build:
@@ -105,6 +111,35 @@ services:
       timeout: 5s
       retries: 10
 
+  minio:
+    image: pgsty/silo:RELEASE.2026-09-16T00-00-00Z
+    container_name: documentmanagement_minio
+    command: server /data --console-address ":9090"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio_data:/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
+    container_name: documentmanagement_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
 
 volumes:
@@ -112,6 +147,8 @@ volumes:
   paperless_data:
   paperless_media:
   rabbitmq_data:
+  minio_data:
+  elasticsearch_data:
 #psql -U user -d documentmanagement um in docker desktop zu schreiben
 
 #dotnet ef migrations add <Name> --project .\DocumentManagementSystem.DataAccess\ --startup-project .\DocumentManagementSystem\

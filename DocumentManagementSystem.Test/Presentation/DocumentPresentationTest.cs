@@ -25,6 +25,7 @@ public class DocumentPresentationTest
     private static Mock<IFormFile> CreateFile(string fileName, string contentType, long length)
     {
         var file = new Mock<IFormFile>();
+        file.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
         file.Setup(f => f.FileName).Returns(fileName);
         file.Setup(f => f.ContentType).Returns(contentType);
         file.Setup(f => f.Length).Returns(length);
@@ -148,7 +149,8 @@ public class DocumentPresentationTest
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
-        _mockDocumentService.Verify(s => s.UploadDocumentAsync(It.IsAny<Document>()), Times.Never);
+        _mockDocumentService.Verify(s => s.UploadDocumentAsync(
+            It.IsAny<Document>(), It.IsAny<Stream>(), It.IsAny<long>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -162,7 +164,8 @@ public class DocumentPresentationTest
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
-        _mockDocumentService.Verify(s => s.UploadDocumentAsync(It.IsAny<Document>()), Times.Never);
+        _mockDocumentService.Verify(s => s.UploadDocumentAsync(
+            It.IsAny<Document>(), It.IsAny<Stream>(), It.IsAny<long>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -176,7 +179,8 @@ public class DocumentPresentationTest
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
-        _mockDocumentService.Verify(s => s.UploadDocumentAsync(It.IsAny<Document>()), Times.Never);
+        _mockDocumentService.Verify(s => s.UploadDocumentAsync(
+            It.IsAny<Document>(), It.IsAny<Stream>(), It.IsAny<long>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -193,7 +197,9 @@ public class DocumentPresentationTest
                 d.sizeInBytes == 1024 &&
                 d.contentType == "application/pdf")))
             .Returns(document);
-        _mockDocumentService.Setup(s => s.UploadDocumentAsync(document)).ReturnsAsync(document);
+        _mockDocumentService
+            .Setup(s => s.UploadDocumentAsync(document, It.IsAny<Stream>(), 1024, "application/pdf"))
+            .ReturnsAsync(document);
 
         // Act
         var result = await _controller.Upload(file.Object, "desc");
@@ -202,6 +208,7 @@ public class DocumentPresentationTest
         var createdResult = Assert.IsType<CreatedResult>(result);
         Assert.Equal(201, createdResult.StatusCode);
         Assert.Equal("api/documents/7", createdResult.Location);
-        _mockDocumentService.Verify(s => s.UploadDocumentAsync(document), Times.Once);
+        _mockDocumentService.Verify(
+            s => s.UploadDocumentAsync(document, It.IsAny<Stream>(), 1024, "application/pdf"), Times.Once);
     }
 }
