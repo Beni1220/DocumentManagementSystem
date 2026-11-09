@@ -2,6 +2,7 @@
   <Project Path="DocumentManagementSystem.BusinessLogic/DocumentManagementSystem.BusinessLogic.csproj" />
   <Project Path="DocumentManagementSystem.DataAccess/DocumentManagementSystem.DataAccess.csproj" />
   <Project Path="DocumentManagementSystem.OcrWorker/DocumentManagementSystem.OcrWorker.csproj" />
+  <Project Path="DocumentManagementSystem.IndexingWorker/DocumentManagementSystem.IndexingWorker.csproj" />
   <Project Path="DocumentManagementSystem.Storage/DocumentManagementSystem.Storage.csproj" />
   <Project Path="DocumentManagementSystem.Test/DocumentManagementSystem.Test.csproj" Id="c0846cff-e86b-4437-ba06-dad2a0b2e254" />
   <Project Path="DocumentManagementSystem/DocumentManagementSystem.csproj" />

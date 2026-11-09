@@ -1,11 +1,14 @@
-import { getDocuments, deleteDocument, uploadDocument } from './api.js';
+import { getDocuments, deleteDocument, uploadDocument, searchDocuments } from './api.js';
 
 const list = document.getElementById('list');
 const listError = document.getElementById('list-error');
-// const form = document.getElementById('create-form');
 const formError = document.getElementById('form-error');
 const fileInput = document.getElementById('upload-document');
 const uploadButton = document.getElementById('upload-button');
+const searchForm = document.getElementById('search-form');
+const searchInput = document.getElementById('search-query');
+const searchStatus = document.getElementById('search-status');
+const clearSearchButton = document.getElementById('clear-search');
 
 async function loadDocuments() {
     try {
@@ -57,63 +60,85 @@ async function handleDelete(doc) {
     }
     try {
         await deleteDocument(doc.id);
-        await loadDocuments();
+        if (searchInput.value.trim().length >= 3) {
+            await searchForDocuments();
+        } else {
+            await loadDocuments();
+        }
     } catch (error) {
         listError.textContent = `Could not delete the document (${error.message})`;
     }
 }
-
-/*
-async function handleSubmit(event) {
-    event.preventDefault();
-
-    const fileName = form.elements.fileName.value.trim();
-    const description = form.elements.description.value.trim();
-
-    if (fileName === '') {
-        formError.textContent = 'File name must not be empty';
-        return;
-    }
-    formError.textContent = '';
-
-    try {
-        await createDocument({ fileName, description });
-        form.reset();
-        await loadDocuments();
-    } catch (error) {
-        formError.textContent = `Could not save the document (${error.message})`;
-    }
-}
- 
-*/
-
 
 fileInput.addEventListener('change', () => {
     uploadButton.disabled = fileInput.files.length === 0;
 });
 
 async function handleFileUpload() {
-    console.log('Selected file:', fileInput.files[0]);
-
-    if(uploadButton.disabled || fileInput.files.length === 0) return;
+    if (uploadButton.disabled || fileInput.files.length === 0) {
+        return;
+    }
+    formError.textContent = '';
 
     try {
-        uploadButton.disabled = true; 
+        uploadButton.disabled = true;
         await uploadDocument(fileInput.files[0]);
+        searchInput.value = '';
+        searchStatus.textContent = '';
         await loadDocuments();
 
         fileInput.value = '';
-       
+
     } catch (error) {
         formError.textContent = `Could not upload the document (${error.message})`;
     } finally {
-        uploadButton.disabled = fileInput.files.length === 0; 
+        uploadButton.disabled = fileInput.files.length === 0;
     }
-
 
 }
 
+async function searchForDocuments() {
+    const query = searchInput.value.trim();
+    if (query.length < 3) {
+        searchStatus.textContent = 'Enter at least 3 characters.';
+        return;
+    }
+
+    try {
+        searchStatus.textContent = 'Searching…';
+        const results = await searchDocuments(query);
+        const documents = [];
+        for (const result of results) {
+            documents.push({
+                id: result.documentId,
+                fileName: result.fileName,
+                description: result.description,
+            });
+        }
+        renderDocuments(documents);
+        if (results.length === 0) {
+            searchStatus.textContent = 'No matching documents found.';
+        } else {
+            searchStatus.textContent = `Matching documents: ${results.length}`;
+        }
+        listError.textContent = '';
+    } catch (error) {
+        searchStatus.textContent = '';
+        listError.textContent = `Search failed (${error.message}).`;
+    }
+}
+
+searchForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await searchForDocuments();
+});
+
+clearSearchButton.addEventListener('click', async () => {
+    searchInput.value = '';
+    searchStatus.textContent = '';
+    await loadDocuments();
+});
+
 uploadButton.addEventListener('click', handleFileUpload);
 
-//form.addEventListener('submit', handleSubmit);
 loadDocuments();

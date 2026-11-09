@@ -8,6 +8,7 @@ using DocumentManagementSystem.DataAccess.Repositories;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
 using DocumentManagementSystem.Exceptions;
 using DocumentManagementSystem.Storage.Interfaces;
+using DocumentManagementSystem.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -23,6 +24,11 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 builder.Services.AddScoped<IFileStorage, MinioFileStorage>();
+builder.Services.AddHttpClient<IDocumentSearchService, ElasticsearchDocumentSearchService>((services, client) =>
+{
+    var endpoint = services.GetRequiredService<IConfiguration>()["Elasticsearch:Url"]!;
+    client.BaseAddress = new Uri(endpoint.EndsWith('/') ? endpoint : endpoint + "/");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -41,17 +47,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<DMSContext>();
     db.Database.Migrate();
 }
-
-/*
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "Document Management System API V1");
-    });
-}
-*/
 
 if (app.Environment.IsDevelopment())
 {

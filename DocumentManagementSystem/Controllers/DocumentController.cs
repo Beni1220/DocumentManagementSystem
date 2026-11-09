@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using Domain.Model;
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
 using Domain.Model.DTO;
 using AutoMapper;
+using DocumentManagementSystem.Services;
 [ApiController]
 [Route("api/documents")]
 public class DocumentController : ControllerBase
@@ -13,12 +12,15 @@ public class DocumentController : ControllerBase
     private readonly IMapper _mapper;
 
     private readonly ILogger<DocumentController> _logger;
+    private readonly IDocumentSearchService _searchService;
 
-    public DocumentController(IDocumentService service, IMapper mapper, ILogger<DocumentController> logger)
+    public DocumentController(IDocumentService service, IMapper mapper, ILogger<DocumentController> logger,
+        IDocumentSearchService searchService)
     {
         _service = service;
         _mapper = mapper;
         _logger = logger;
+        _searchService = searchService;
     }
 
     [HttpGet]
@@ -26,6 +28,49 @@ public class DocumentController : ControllerBase
     {
         List<Document> documents = _service.ListDocuments();
         return Ok(new { message = "Get all documents", data = documents });
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string? q, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return BadRequest(new { message = "A search term is required." });
+        }
+
+        if (q.Trim().Length < 3)
+        {
+            return BadRequest(new { message = "Search terms must be at least 3 characters long." });
+        }
+
+        var searchResults = await _searchService.SearchAsync(q.Trim(), cancellationToken);
+
+        // PostgreSQL sagt, welche Dokumente es noch gibt. Elasticsearch kann
+        // alte Treffer enthalten, z. B. wenn ein Worker erst nach dem Löschen fertig wird.
+        var documentsById = _service.ListDocuments().ToDictionary(document => document.Id);
+        var results = new List<SearchDocument>();
+        foreach (var searchResult in searchResults)
+        {
+            if (documentsById.TryGetValue(searchResult.DocumentId, out var document))
+            {
+                results.Add(new SearchDocument
+                {
+                    DocumentId = document.Id,
+                    FileName = document.FileName,
+                    Description = document.Description
+                });
+            }
+        }
+        return Ok(new
+        {
+            message = "Search documents",
+            data = results.Select(document => new
+            {
+                document.DocumentId,
+                document.FileName,
+                document.Description
+            })
+        });
     }
 
     [HttpPost]
@@ -54,11 +99,12 @@ public class DocumentController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-       _service.DeleteDocument(id);
+        _service.DeleteDocument(id);
+        await _searchService.DeleteAsync(id, cancellationToken);
 
-        _logger.LogInformation("Deleting document {DocumentId}", id);
+        _logger.LogInformation("Deleted document {DocumentId} from database and search index", id);
 
         return NoContent();
     }

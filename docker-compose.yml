@@ -30,9 +30,10 @@ services:
       RabbitMq__UserName: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
       Minio__Endpoint: minio:9000
-      Minio__AccessKey: ${MINIO_USER}
-      Minio__SecretKey: ${MINIO_PASSWORD}
+      Minio__AccessKey: ${MINIO_USER:-dms}
+      Minio__SecretKey: ${MINIO_PASSWORD:-dms_secret}
       Minio__BucketName: documents
+      Elasticsearch__Url: http://elasticsearch:9200
     depends_on:
       db:
         condition: service_healthy
@@ -40,6 +41,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      elasticsearch:
+        condition: service_healthy
 
   ocrworker:
     build:
@@ -50,8 +53,31 @@ services:
       RabbitMq__Port: 5672
       RabbitMq__UserName: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      Minio__Endpoint: minio:9000
+      Minio__AccessKey: ${MINIO_USER:-dms}
+      Minio__SecretKey: ${MINIO_PASSWORD:-dms_secret}
+      Minio__BucketName: documents
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: on-failure
+
+  indexingworker:
+    build:
+      context: .
+      dockerfile: DocumentManagementSystem.IndexingWorker/Dockerfile
+    environment:
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: ${RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      Elasticsearch__Url: http://elasticsearch:9200
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     restart: on-failure
 
@@ -64,15 +90,17 @@ services:
       - "80:80"
     depends_on:
       - rest
-      - paperless
     volumes:
       - ./frontend/public:/usr/share/nginx/html:ro
+      - frontend_logs:/var/log/dms
   
   broker:
+    profiles: ["paperless"]
     image: redis:7
     restart: unless-stopped
 
   paperless:
+    profiles: ["paperless"]
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     depends_on:
       - broker
@@ -116,8 +144,8 @@ services:
     container_name: documentmanagement_minio
     command: server /data --console-address ":9090"
     environment:
-      MINIO_ROOT_USER: ${MINIO_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_USER:-dms}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-dms_secret}
     ports:
       - "9000:9000"
       - "9090:9090"
@@ -142,7 +170,40 @@ services:
       retries: 20
 
 
+  logstash:
+    image: docker.elastic.co/logstash/logstash:9.3.0
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      XPACK_MONITORING_ENABLED: "false"
+      PIPELINE_WORKERS: 1
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - frontend_logs:/var/log/dms:ro
+      - logstash_data:/usr/share/logstash/data
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.3.0
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      SERVER_NAME: dms-kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:5601/api/status > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
 volumes:
+  frontend_logs:
+  logstash_data:
   postgres_data:
   paperless_data:
   paperless_media:

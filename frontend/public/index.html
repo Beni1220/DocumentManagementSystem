@@ -20,6 +20,16 @@
             <p id="form-error" class="error" role="alert"></p>
         </form>
 
+        <form id="search-form">
+            <label for="search-query">Search document content</label>
+            <input id="search-query" type="search" placeholder="Search for text in PDFs">
+            <div>
+                <button type="submit">Search</button>
+                <button id="clear-search" type="button">Show all documents</button>
+            </div>
+            <p id="search-status" role="status"></p>
+        </form>
+
         <p id="list-error" class="error" role="alert"></p>
         <ul id="list"></ul>
     </main>

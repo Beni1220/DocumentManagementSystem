@@ -7,5 +7,6 @@ namespace Domain.Massages
     public static class QueueNames
     {
         public const string Ocr = "ocr_queue";
+        public const string Indexing = "indexing_queue";
     }
 }

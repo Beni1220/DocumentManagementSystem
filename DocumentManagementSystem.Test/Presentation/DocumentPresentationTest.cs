@@ -6,12 +6,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using DocumentManagementSystem.Services;
+using DocumentManagementSystem.DataAccess.Exceptions;
+using System.Text.Json;
 using Xunit;
 
 public class DocumentPresentationTest
 {
     private readonly Mock<IDocumentService> _mockDocumentService = new();
     private readonly Mock<IMapper> _mockMapper = new();
+    private readonly Mock<IDocumentSearchService> _mockSearchService = new();
     private readonly DocumentController _controller;
 
     public DocumentPresentationTest()
@@ -19,7 +23,8 @@ public class DocumentPresentationTest
         _controller = new DocumentController(
             _mockDocumentService.Object,
             _mockMapper.Object,
-            NullLogger<DocumentController>.Instance);
+            NullLogger<DocumentController>.Instance,
+            _mockSearchService.Object);
     }
 
     private static Mock<IFormFile> CreateFile(string fileName, string contentType, long length)
@@ -129,14 +134,51 @@ public class DocumentPresentationTest
     // ---------- Delete ----------
 
     [Fact]
-    public void Delete_ReturnsNoContent_AndCallsService()
+    public async Task Delete_ReturnsNoContent_AndRemovesSearchEntry()
     {
         // Act
-        var result = _controller.Delete(1);
+        var result = await _controller.Delete(1, CancellationToken.None);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
         _mockDocumentService.Verify(s => s.DeleteDocument(1), Times.Once);
+        _mockSearchService.Verify(s => s.DeleteAsync(1, CancellationToken.None), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_DoesNotRemoveIndexEntry_WhenDatabaseDeleteFails()
+    {
+        _mockDocumentService.Setup(s => s.DeleteDocument(1))
+            .Throws(new DataAccessException("Database unavailable", new Exception()));
+
+        await Assert.ThrowsAsync<DataAccessException>(() => _controller.Delete(1, CancellationToken.None));
+
+        _mockSearchService.Verify(s => s.DeleteAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Search_HidesDeletedDocuments_AndUsesCurrentMetadata()
+    {
+        // Der Index kennt ein gelöschtes Dokument und alte Metadaten.
+        _mockSearchService.Setup(s => s.SearchAsync("Tesseract", CancellationToken.None))
+            .ReturnsAsync(new List<SearchDocument>
+            {
+                new() { DocumentId = 1, FileName = "deleted.pdf" },
+                new() { DocumentId = 2, FileName = "old-name.pdf" }
+            });
+        _mockDocumentService.Setup(s => s.ListDocuments()).Returns(new List<Document>
+        {
+            new() { Id = 2, FileName = "current-name.pdf", Description = "Current description" }
+        });
+
+        var result = await _controller.Search("Tesseract", CancellationToken.None);
+
+        var response = Assert.IsType<OkObjectResult>(result);
+        var data = JsonSerializer.SerializeToElement(response.Value).GetProperty("data");
+        Assert.Equal(1, data.GetArrayLength());
+        Assert.Equal(2, data[0].GetProperty("DocumentId").GetInt32());
+        Assert.Equal("current-name.pdf", data[0].GetProperty("FileName").GetString());
+        Assert.Equal("Current description", data[0].GetProperty("Description").GetString());
     }
 
     // ---------- Upload ----------

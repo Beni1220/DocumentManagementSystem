@@ -65,6 +65,28 @@ namespace DocumentManagementSystem.BusinessLogic.Storage
             }
         }
 
+        public async Task<Stream> DownloadAsync(string objectName)
+        {
+            try
+            {
+                string bucketName = _configuration["Minio:BucketName"]!;
+                using var client = CreateClient();
+                var content = new MemoryStream();
+                await client.GetObjectAsync(new GetObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    // Mit zwei Parametern wird der asynchrone Callback abgewartet.
+                    .WithCallbackStream((stream, cancellationToken) =>
+                        stream.CopyToAsync(content, cancellationToken)));
+                content.Position = 0;
+                return content;
+            }
+            catch (Exception ex)
+            {
+                throw new StorageException($"Could not retrieve file '{objectName}'.", ex);
+            }
+        }
+
         private IMinioClient CreateClient()
         {
             return new MinioClient()

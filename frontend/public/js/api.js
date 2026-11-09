@@ -16,22 +16,18 @@ export async function getDocuments() {
     return result.data;
 }
 
+export async function searchDocuments(query) {
+    const response = await request(`${BASE_URL}/search?q=${encodeURIComponent(query)}`);
+    const result = await response.json();
+    return result.data;
+}
+
 export async function getDocument(id) {
     const response = await request(`${BASE_URL}/${encodeURIComponent(id)}`);
     const result = await response.json();
     return result.data;
 }
 
-/*
-export async function createDocument({ fileName, description }) {
-    const response = await request(BASE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName, description }),
-    });
-    return response.json();
-}
-*/
 export async function deleteDocument(id) {
     await request(`${BASE_URL}/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
@@ -49,7 +45,7 @@ export async function uploadDocument(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-   const response = await request(`${BASE_URL}/uploadDocument`, {
+    const response = await request(`${BASE_URL}/uploadDocument`, {
         method: 'POST',
         body: formData,
     });

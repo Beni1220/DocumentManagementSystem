@@ -7,6 +7,7 @@ namespace DocumentManagementSystem.Storage.Interfaces
     public interface IFileStorage
     {
         Task UploadAsync(string objectName, Stream content, long size, string contentType);
+        Task<Stream> DownloadAsync(string objectName);
         Task DeleteAsync(string objectName);
     }
 }
