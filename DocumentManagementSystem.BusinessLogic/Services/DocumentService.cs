@@ -1,6 +1,7 @@
 ﻿﻿using DocumentManagementSystem.BusinessLogic.Messaging.Interfaces;
 using DocumentManagementSystem.BusinessLogic.Services.Interfaces;
 using DocumentManagementSystem.DataAccess.Repositories.Interfaces;
+using DocumentManagementSystem.Storage.Exceptions;
 using DocumentManagementSystem.Storage.Interfaces;
 using Domain.Massages;
 using Domain.Model;
@@ -24,6 +25,15 @@ namespace DocumentManagementSystem.BusinessLogic.Services
         public void DeleteDocument(int documentId)
         {
             _documentRepository.DeleteDocument(documentId);
+            string objectName = $"{documentId}.pdf";
+            try
+            {
+                _fileStorage.DeleteAsync(objectName);
+            }
+            catch (StorageException)
+            {
+                _logger.LogWarning("File {ObjectName} could not be removed from the storage", objectName);
+            }
         }
 
         public Document GetDocument(int documentId)

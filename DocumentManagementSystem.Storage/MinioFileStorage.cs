@@ -75,7 +75,6 @@ namespace DocumentManagementSystem.BusinessLogic.Storage
                 await client.GetObjectAsync(new GetObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName)
-                    // Mit zwei Parametern wird der asynchrone Callback abgewartet.
                     .WithCallbackStream((stream, cancellationToken) =>
                         stream.CopyToAsync(content, cancellationToken)));
                 content.Position = 0;
