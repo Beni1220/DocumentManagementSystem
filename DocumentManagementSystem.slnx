@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/DocumentManagementSystem.GenAIWorker/">
+    <Project Path="DocumentManagementSystem.GenAIWorker/GenAIWorker/GenAIWorker.csproj" />
+  </Folder>
   <Project Path="DocumentManagementSystem.BusinessLogic/DocumentManagementSystem.BusinessLogic.csproj" />
   <Project Path="DocumentManagementSystem.DataAccess/DocumentManagementSystem.DataAccess.csproj" />
   <Project Path="DocumentManagementSystem.OcrWorker/DocumentManagementSystem.OcrWorker.csproj" />

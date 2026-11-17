@@ -201,6 +201,21 @@ services:
       retries: 30
       start_period: 60s
 
+  genai-worker:
+    build:
+      context: .
+      dockerfile: DocumentManagementSystem.GenAIWorker/GenAIWorker/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__User: dms
+      RabbitMQ__Password: dms_secret
+      Gemini__ApiKey: ${GEMINI_API_KEY}
+      Gemini__Model: ${GEMINI_MODEL}
+    restart: unless-stopped
+
 volumes:
   frontend_logs:
   logstash_data:
